@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Thomas Strider
+Copyright (c) 2026 clean-finance-code contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+ADDITIONAL NOTICE
+
+This software provides engineering guidance for financial systems. It is not
+accounting, tax, legal, audit, or security advice. It does not constitute an
+opinion on the effectiveness of any internal control, the appropriateness of
+any accounting treatment, or the security of any system.
+
+Accounting treatments, materiality thresholds, control design, and audit
+conclusions are the responsibility of qualified professionals. Verify all
+references to accounting standards, effective dates, and regulatory
+requirements against primary sources before relying on them.
