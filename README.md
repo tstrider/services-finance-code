@@ -1,253 +1,171 @@
-# Clean Finance Code
+<div align="center">
 
-### A Claude skill that makes AI-written finance code something you'd be comfortable showing an auditor.
+# Services Finance Code
 
-Your team's already using AI to build forecast models, pull data, and automate parts of the close, probably faster than anyone's reviewing it. This makes sure what comes out is built properly: real engineering standards, current security practices, actual controls, plus finance rules on top so the numbers tie out, the audit trail holds up, and accounting calls go to a person instead of getting guessed at.
+**Finance code for services firms that actually ties out.**
 
-**You get the speed without quietly picking up a control deficiency you'll be explaining to your auditor next year.**
+When Claude builds a margin report, a pricing model, or a billing script for your firm, this makes it check the number before it hands it to you.
 
-Built for FP&A, Commercial Finance, AP, AR and Billing, Treasury, and Controllership. Works whether you're doing a quick pull, a monthly pack, or something that posts to the general ledger.
+[![Claude Skill](https://img.shields.io/badge/Claude-Skill-D97757)](#install)
+[![Built for services firms](https://img.shields.io/badge/built%20for-services%20firms-2ea44f)](#who-its-for)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-```bash
-bash install.sh
-```
+[Install](#install) · [The problem](#the-problem) · [Example](#see-the-difference) · [What it checks](#what-it-checks) · [FAQ](#faq)
 
----
-
-## What you actually get
-
-Two things, and both halves matter.
-
-**Modern engineering, enforced.** Not principles in a document. Named tooling that runs as gates before anything is called done: `uv` with a committed lockfile, `ruff` for lint and format, `mypy --strict`, `pydantic` for validation, `gitleaks` for secrets, `semgrep` for static analysis, `pip-audit` for known vulnerabilities, SBOM and Sigstore signing for supply chain, dbt contracts and unit tests for the warehouse. Plus the discipline behind them: read before writing, smallest correct change, one implementation of every business rule, explicit errors, no hidden state, no magic numbers.
-
-**Correct numbers.** Reconcile before analyzing, `Decimal` never `float`, no silently dropped rows, rates looked up by service date, ledger entries that can't be edited after the fact, and accounting judgments handed to a human instead of inferred from whatever the data happens to look like.
-
-They ship together for a reason: **in finance, sloppy code usually doesn't crash. It just hands you a wrong number.** Duplicated logic means the pricing tool and the reporting mart disagree by Q3. Hidden state means results depend on when the job ran. A hardcoded number in a formula is a tax rate nobody reviewed. Clean code isn't cosmetic here, it's how the number stays right.
+</div>
 
 ---
 
-## Why this exists
+Services Finance Code is a skill for Claude. A skill is a set of instructions Claude picks up on its own when a task calls for it. This one kicks in whenever Claude writes or runs code that touches your firm's money: margin, pricing, billable hours, WIP, invoicing, forecasts, reconciliations, or data from your accounting system.
 
-Five failure modes, all of which produce numbers that look fine:
+## Who it's for
 
-| Failure | What it costs |
-|---|---|
-| A pipeline whose inner join silently drops 200 accrual rows | A month-end that ties to nothing, found in the review meeting |
-| `float` arithmetic on money | Reconciliation breaks by pennies that compound and nobody can source |
-| The same margin rule implemented in two places | They diverge within a quarter, and a client finds it before you do |
-| A growth rate hardcoded inside a formula | Invisible, never reviewed, silently wrong at the next reforecast |
-| An agent deciding an accounting treatment from data shape | Revenue presentation flips when the data changes, with no human in the loop |
+In-house finance teams at people-based services firms. Agencies, consultancies, law firms, accounting firms, engineering and design firms, staffing, and managed services. Roughly 20 to 1,000 people, running QuickBooks, Xero, NetSuite, or Sage Intacct, plus a time tracker and a lot of Excel.
 
-The first two are data bugs. The middle two are **code quality** bugs that happen to cost money. The last is a governance failure. None are caught by linters, type checkers, or normal code review. All five are caught here.
+You don't need to code. You ask for the report or the tool. Claude does the technical work and tells you, in plain words, whether the number holds up.
 
----
+## The problem
+
+In finance, bad code rarely crashes. It hands you a number that looks fine.
+
+A join quietly drops the 40 invoices whose client isn't in the client list. A cost-per-hour formula divides by 2,080 hours and makes a losing scope look profitable. Last year's work gets priced at this year's rates. Fractions of a cent pile up until the report doesn't match the ledger, and nobody can say why.
+
+None of these throw an error. You find out in the review meeting, or from the client.
+
+## The fix
+
+The skill gives Claude one priority: **get the number right first.** Then it makes sure you can see that it's right.
+
+Every result comes with a tie-out: the rows in, the rows out, what was left out and why, and the source it was checked against. If the numbers don't tie and Claude can't explain the gap, it stops and tells you instead of papering over it.
 
 ## See the difference
 
-Same request, same model. The difference is what Claude does before answering.
+*An illustration with made-up numbers.*
 
-> **"Pull Q3 revenue by client and compare it to budget."**
+> **You:** What was our gross margin by client in Q3?
 
 **Without the skill**
 
-Claude writes a clean, readable pandas script. It reads the extract, joins invoices to the client table, groups by client, merges the budget, and returns a tidy table with a variance column. It runs in four seconds and looks completely reasonable.
+Claude writes a tidy script. It joins time entries to rate cards, divides each person's cost by 2,080 hours, sums by client, and returns a clean table. Blended margin: 41%. It runs in seconds and looks right.
 
-Three things went wrong and none of them are visible:
+Three things went wrong, and none of them show:
 
-- The join was an inner join. Forty invoices had client IDs not present in the client table, so **$180K of revenue silently vanished**.
-- Amounts are `float64`, the pandas default. The totals are off by fractions of a cent that will not tie to the general ledger.
-- Nothing was checked against anything. The output is internally consistent and externally wrong.
-
-You find out in the review meeting.
+- Cost per hour used 2,080 paid hours instead of billable hours, so every hour looks about 13% cheaper than it really is.
+- 312 time entries had a role missing from the rate card. The join dropped them, along with $58,400 of work.
+- Rates were looked up as "current", so July's work was priced at September's new rates.
 
 **With the skill**
 
 ```
-Tier:       0 (analysis)
-Period:     FY26 Q3 (fiscal), 2026-04-01 to 2026-06-30
-Basis:      Accrual
-Scope:      Entities 1, 2 · USD · intercompany excluded
-Source:     NetSuite SuiteQL, extracted 2026-08-08 06:12 UTC
-
-Rows in:    48,213    Control total in:   12,847,332.14 USD
-Excluded:      412    Excluded total:        (94,220.00) USD  [intercompany, per policy]
-Rows out:   47,801    Control total out:  12,753,112.14 USD
-Delta:      ties exactly
-Tie-out:    Agrees to NetSuite Trial Balance for FY26 Q3
-
-⚠ 40 invoices (180,412.00 USD) have client IDs absent from the client master.
-  Retained as "Unassigned" rather than dropped. These need mapping before
-  this analysis is used — client-level figures are understated until resolved.
+Bottom line: Q3 gross margin was 33%, and the numbers tie to your P&L.
+Ties to:     Q3 revenue ($4,212,880) matches the income statement exactly.
+Assumed:     1,800 billable hours per person per year. Tell me your
+             firm's number if it's different.
+Needs you:   312 time entries ($58,400) have a role missing from the
+             rate card. I kept them as "Unassigned" instead of dropping
+             them. Two clients look worse than they are until they're mapped.
+Not checked: Hours logged after Oct 5 aren't included.
 ```
 
-Then the table.
+Then a table by client, and a "Proof" section with the full tie-out and every check it ran, for anyone who wants to look.
 
-The second version took slightly longer and is the only one you can act on. That is the entire value proposition.
+The second answer took a little longer. It's the only one you can take into a meeting.
 
----
+## What it checks
 
-## The core idea: risk tiers
+**The number**
+- Money math is exact. No floating-point rounding errors, rounding done once and on purpose.
+- No dropped rows. Every join is counted, and unmatched records are kept and reported.
+- Every result ties to your system's own report: trial balance, P&L, AR aging, or bank statement.
+- Rates come from the day the work was done, not today's rate card.
 
-Discipline scales with consequence. This is the design decision everything else rests on — without it, the skill would demand an architecture decision record to pivot a trial balance, and you would stop using it by Thursday.
+**Services-firm math**
+- Cost per hour uses billable hours (1,800 by default, never 2,080), and it tells you the number it used.
+- Utilization, realization, and fee burn come with their definitions, because firms define them differently.
+- WIP, unbilled, and deferred revenue are kept apart.
+- Late time entries are called out with a cut-off date.
 
-| Tier | What it is | What's required |
+**Judgment calls go to people**
+- Gross versus net on pass-through costs (media, subcontractors, expert fees) is flagged for your controller, never guessed.
+- It never tweaks a model to hit a target number. It shows what would have to be true instead.
+- Before anything posts, bills, or pays, it shows you exactly what will happen and waits for a yes.
+
+**Your data stays yours**
+- Bank numbers, tax IDs, and pay are masked in every output and log.
+- Sensitive data is never sent anywhere your own setup doesn't already use.
+- A security check runs on every job, however small.
+
+**Clean code underneath**
+- Standard checks for formatting, types, tests, leaked passwords, and risky packages. If a tool is missing, Claude asks once before installing it, and only inside that project.
+
+## How big a deal is the job?
+
+Claude sorts every job into a tier first, so small questions stay fast and risky work gets full care.
+
+| Tier | Example | What you get |
 |---|---|---|
-| **0 — Analysis** | One-off pull, pivot, scenario | Reconcile to a control total. State period, basis, entity, currency, filters. No ceremony. |
-| **1 — Recurring** | Monthly pack, forecast refresh, dashboard | Reproducible from a pinned source, assumptions documented, prior vintages preserved |
-| **2 — System of record** | Posts to the GL, bills a client, moves cash, feeds an audit | Full engineering discipline, security review, immutability, segregation of duties, audit trail, named human reviewer |
-| **2P — Finance product** | In-house tool others use to do finance work | Plus access control, concurrency, versioned calculation logic, migration story |
+| **0: Quick look** | "What did we bill Acme last quarter?" | A fast answer that ties to your books |
+| **1: Repeat run** | Monthly margin pack, forecast refresh | Plus: rerunnable, assumptions written down, old versions kept |
+| **2: Books, bills, or pays** | Invoice generation, journal entries | Plus: your approval before anything is written, a full audit trail |
+| **3: Finance tool** | A pricing calculator your team uses | Plus: access control, versioned logic, safe for many users |
 
-Claude states the tier before starting, and says so when work escalates between them. A "quick analysis" that gets scheduled has become Tier 1.
+## Install
 
----
+**In the Claude app (web or desktop)**
 
-## Quick start
+1. Download [services-finance-code.zip](https://github.com/tstrider/services-finance-code/releases/latest/download/services-finance-code.zip).
+2. In Claude, open **Settings**, then **Capabilities**, and make sure code execution is turned on.
+3. In the **Skills** section, upload the zip.
 
-Download or clone the repo, then from inside the folder:
+**In Claude Code**
 
-```bash
-bash install.sh
+Download and unzip the file above, then copy the `services-finance-code` folder into `~/.claude/skills/` (for all your projects) or into your project's `.claude/skills/` folder (for one project).
+
+Or from a terminal:
+
+```sh
+git clone https://github.com/tstrider/services-finance-code.git
+cp -R services-finance-code/skills/services-finance-code ~/.claude/skills/
 ```
 
-That installs the skill into `.claude/skills/`, drops in the config and rules, wires up the hooks, and verifies they fire. It backs up anything it would overwrite, and it's safe to re-run.
-
-| Command | What it does |
-|---|---|
-| `bash install.sh` | Skill + config into the current project (recommended) |
-| `bash install.sh --user` | Skill only, into `~/.claude/skills/` for every project |
-| `bash install.sh --skill-only` | Skill into this project, no config changes |
-
-**Then do this**, because the installer can't: open `CLAUDE.md` and replace the `<bracketed>` placeholders with your real build and test commands, and adjust the `permissions` block in `.claude/settings.json` to your stack. A CLAUDE.md full of placeholders is worse than none, and the default permissions assume npm and pytest.
-
-Optional check that the money helpers work:
-
-```bash
-cd skills/clean-finance-code/helpers && python3 -m pytest test_money.py -q
-# expect: 37 passed
-```
-
-Manual setup and the reasoning behind the structure are in [`docs/INSTALL.md`](docs/INSTALL.md).
-
----
+**Try it:** ask Claude "What's our cost per billable hour for a $120,000 salary with 25% benefits and taxes?" It should say which billable-hours number it used and invite you to change it.
 
 ## What's inside
 
 ```
-skills/clean-finance-code/
-  SKILL.md                       always-loaded: risk tiers, money invariants, clean code,
-                                 security, reconciliation, ledger integrity, controls, GAAP
-  references/                    loaded on demand, only when the task needs them
-
-    — engineering and tooling —
-    modern-toolchain.md          named 2026 tools as gates: uv, ruff, mypy strict, pydantic,
-                                 pytest, SQLFluff, dbt contracts + unit tests, Excel and
-                                 Power Query discipline, gitleaks, semgrep, pip-audit,
-                                 SBOM/SLSA/Sigstore, CI structure, AI-dev controls
-    code-quality.md              anti-pattern catalogue with smallest-remediation guidance,
-                                 including the query anti-patterns that produce wrong numbers
-    architecture-and-dependencies.md  decision factors, ADR template, dependency scorecard,
-                                 performance, reliability, observability
-    self-review.md               pre-report checklist: code, numbers, security, honesty
-    testing-finance-code.md      golden datasets, property tests, edge cases that occur
-    security-review.md           OWASP Top 10:2025 checklist scoped to finance systems
-
-    — finance correctness —
-    money-invariants.md          decimal, rounding, allocation, FX, sign conventions
-    reconciliation-and-controls.md  control totals, tie-outs, SOD, audit trail, ITGC
-    gaap-reference.md            ASC 606/830/842/450, recent ASUs, escalation triggers
-    data-modeling.md             chart of accounts, grain, effective dating, warehouse layers
-    erp-and-systems.md           named systems and their integration hazards
-    workflows.md                 runbooks for analysis, models, pipelines, close, review
-
-    — by function —
-    commercial-finance.md        pricing, rate cards, scopes, margin defense
-    fpna.md                      driver models, vintages, variance bridges, headcount
-    ap.md  ar-billing.md  treasury.md  controllership.md
-    finance-products.md          building in-house finance tools
-
-  helpers/money.py               tested Decimal helpers (37 passing tests)
-
-config/
-  CLAUDE.md                      project instruction template
-  settings.json                  permissions and token-budget settings
-  rules/                         path-scoped rules that load only for matching files
-  hooks/                         enforcement that runs as code
+skills/services-finance-code/
+  SKILL.md             the core rules Claude always reads
+  references/          16 guides Claude opens only when a task needs them
+                       (pricing and margin, billing and revenue, FP&A,
+                       money math, reconciliation, accounting rules with
+                       IFRS notes, security checklist, systems, and more)
+  scripts/money.py     tested helpers for exact money math, with no
+                       outside packages, no internet, and no file access
 ```
 
----
+## FAQ
 
-## Three levels of enforcement
+**Is this accounting advice?**
+No. It helps Claude build code that carries the right concepts and knows when to stop and ask. Accounting treatments, materiality, and audit conclusions belong to your controller and auditor.
 
-The distinction matters more than any individual rule, and most setups miss it.
+**Does it make code secure?**
+It lowers risk. It doesn't prove anything is secure, and it's told never to claim that. It says what it checked and what it didn't.
 
-| Mechanism | Nature | Good for |
-|---|---|---|
-| **Skill + CLAUDE.md** | Context Claude reads and tries to follow. **No guarantee.** | Judgment, standards, domain knowledge |
-| **`permissions`** | Enforced by the client regardless of what Claude decides | Hard blocks |
-| **Hooks** | Run as code at lifecycle events regardless of what Claude decides | Formatting, secret scanning, destructive-command guards |
+**Will it slow down quick questions?**
+Barely. A quick look still gets a tie-out, and the security check marks most sections "not applicable" in a line each.
 
-**Anything you cannot tolerate being skipped belongs in a hook, not in prose.**
+**My firm isn't a services firm. Will it still help?**
+The money math, tie-outs, and security rules work anywhere. The pricing and billing guides are written for firms that sell people's time.
 
-Three hooks ship here, all tested:
+**What accounting rules does it know?**
+US GAAP by default, with notes where IFRS differs. Tell Claude which your firm uses.
 
-- **`guard-finance-numerics.sh`** — flags `FLOAT` on money columns, `Decimal(0.1)` built from a float literal, hardcoded FX rates, `UPDATE`/`DELETE` against ledger tables, `COALESCE(money, 0)`, hardcoded materiality thresholds, `is_current` rate lookups, and division by 2080 in a cost context (the billable-hours denominator should default to 1,800 and live in the assumptions block). Hard-blocks any log line containing routing numbers, tax IDs, SSNs, or salary.
-- **`guard-destructive.sh`** — blocks force pushes, hard resets, `DELETE` without `WHERE`, absolute-path `rm -rf`, and piping remote scripts to a shell.
-- **`format-and-lint.sh`** — formats and lints the edited file, with a hardcoded-secret canary.
+**Does it connect to my accounting system?**
+It doesn't add any connections. It works with whatever access you've already set up, and it's careful with it: test company first, read before write, and your yes before anything is written.
 
----
-
-## A few rules worth calling out
-
-These are the ones that catch real money.
-
-**Fully loaded cost divides by annual billable hours, defaulting to 1,800, not 2,080.** 2,080 is total paid hours with nothing removed for PTO, holidays, training, or business development. Using it understates cost and is the most common reason scopes price as profitable and deliver as losses. The skill states the assumption in its output and invites you to change it.
-
-**Never overwrite a forecast vintage.** Every run is a new immutable version. Overwrite and you cannot measure forecast accuracy, so systematic bias repeats indefinitely.
-
-**Posted entries are immutable.** Corrections are reversing entries. No `UPDATE`, no `DELETE`. Audit requirement, not preference.
-
-**Allocation is exhaustive.** Splitting 100.00 three ways gives 33.33 / 33.33 / 33.34, never three 33.33s. The helpers enforce this and raise rather than leak.
-
-**Idempotency on anything money-moving**, enforced by a database unique constraint rather than application logic. A retried payment batch that double-pays is the classic catastrophe.
-
-**Accounting judgments escalate, never resolve.** Revenue presentation (gross vs net), capitalization, recognition timing, and reserve adequacy are controller and auditor decisions. The skill presents indicators and evidence, then stops. Treatments are carried as dated data attributes, never inferred at runtime — so presentation cannot silently flip when the data changes.
-
-**Never plug to a target.** If asked to make a model match a number, it states the derived figure, what assumption would have to change, and whether that assumption is defensible.
-
----
-
-## Who it's for
-
-Written for **people-based services businesses** — agencies, law firms, consultancies, engineering and design firms, staffing, managed services. The shared structure: revenue is a function of people's time, capacity is the constraint, and margin is defended at pricing rather than recovered later.
-
-Most of it (money invariants, reconciliation, ledger integrity, controls, GAAP, ERP integration) is industry-agnostic. The pricing and billing sections lean toward services.
-
-Functions covered: FP&A, Commercial Finance, Accounts Payable, Accounts Receivable and Billing, Treasury, Controllership.
-
----
-
-## Scope and limits
-
-**This is not accounting advice.** The GAAP reference exists so code encodes the right concepts and so Claude knows when to stop and escalate. Verify effective dates against FASB directly — deferrals and clarifications happen.
-
-**This is not a security guarantee.** The security checklist reduces risk; it does not prove absence of vulnerabilities. The skill is explicitly instructed never to claim code is secure, and to distinguish what it ran from what it concluded.
-
-**This is not a controls opinion.** Reconciling and passing assertions is evidence, not assurance. Control effectiveness is a conclusion internal audit and your external auditor own.
-
-**System coverage reflects the 2026 vendor landscape.** Capabilities and API versions move. Confirm before building an integration.
-
-**Auditor expectations for AI-generated code are actively evolving.** PCAOB AS 2201/2101 amendments take effect for periods beginning after December 15, 2026, and COSO issued GenAI guidance in February 2026. Confirm current requirements with your audit team rather than relying on this repo.
-
----
-
-## Requirements
-
-- [Claude Code](https://code.claude.com/docs) or Claude Cowork
-- Python 3.10+ to run the helper tests (the skill itself needs nothing)
-- The hooks use `bash` and `python3`, both standard on macOS and Linux
-
----
+**Does the helper code phone home?**
+No. `money.py` uses only the Python standard library. It has no network access, reads and writes no files, and runs nothing else. Your IT team can read it in a few minutes.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+**MIT.** See [`LICENSE`](LICENSE). Use it, change it, share it. Keep the copyright line.
