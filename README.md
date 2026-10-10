@@ -6,6 +6,8 @@
 
 When Claude builds a margin report, a pricing model, or a billing script for your firm, this makes it check the number before it hands it to you.
 
+**[See it work in your browser](https://tstrider.github.io/services-finance-code/)** before you install anything.
+
 [![Claude Skill](https://img.shields.io/badge/Claude-Skill-D97757)](#install)
 [![Built for services firms](https://img.shields.io/badge/built%20for-services%20firms-2ea44f)](#who-its-for)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
