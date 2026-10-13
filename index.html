@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tick &amp; Tie. Finance numbers from Claude, checked against your books.</title>
+<meta name="description" content="A Claude skill for finance teams at services firms. It makes Claude check every number against your books before it hands it to you. Free and open source.">
+<meta name="theme-color" content="#0A2A21">
+<meta name="color-scheme" content="dark light">
+<link rel="canonical" href="https://thomaskstrider.com/tick-and-tie/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tick &amp; Tie">
+<meta property="og:title" content="Tick &amp; Tie">
+<meta property="og:description" content="A Claude skill for finance teams at services firms. Flip three switches and watch a Q3 margin go wrong without one error.">
+<meta property="og:url" content="https://thomaskstrider.com/tick-and-tie/">
+<meta property="og:image" content="https://thomaskstrider.com/tick-and-tie/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A working paper showing a 33% gross margin, stamped as tied to the income statement.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tick &amp; Tie">
+<meta name="twitter:description" content="A Claude skill that makes finance code for services firms tie out.">
+<meta name="twitter:image" content="https://thomaskstrider.com/tick-and-tie/assets/og.png">
+
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=4">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=4">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css?v=4">
+</head>
+<body>
+
+<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="ink" x="-5%" y="-10%" width="110%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/>
+  </filter>
+  <symbol id="tick" viewBox="0 0 24 24"><path d="M3.5 13.2c2 1.9 3.6 3.9 5 6.3C11.6 12.700 15.800 7.600 21 3.800" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="cross" viewBox="0 0 24 24"><path d="M5 5.500c4.500 4 8.500 8.200 13.500 13.500M19 4.800C14.200 9.500 9.800 14 5.200 19.200" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="1" width="26" height="26" rx="6" class="mk-bg"/><path d="M6 9.500h9M6 14h6M6 18.500h7.500" class="mk-rule"/><path d="M13.500 15.800c1.300 1.200 2.200 2.400 3.100 4 1.700-4.300 3.800-7.300 6.400-9.800" class="mk-tick"/></svg>
+      <span>Tick &amp; Tie</span>
+    </a>
+    <a class="nav-tally" id="tally" href="#report" aria-label="Demos you have used">
+      <span class="tally-marks" id="tally-marks" aria-hidden="true"></span>
+      <span class="tally-n"><b id="tally-n">0</b> of 20 checked</span>
+    </a>
+    <nav class="nav-right" aria-label="Site">
+      <a class="nav-dl dl" href="https://github.com/tstrider/tick-and-tie/releases/latest/download/services-finance-code.zip"><span class="lg">Download the skill</span><span class="sm">Download</span></a>
+      <a class="nav-link gh" href="https://github.com/tstrider/tick-and-tie" aria-label="The skill on GitHub">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+        <span>GitHub</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- 1. hero: the README's Q3 margin question, with its three hidden errors on switches -->
+  <section class="hero" id="hero" data-demo="hero">
+    <div class="lamp lamp--hero" aria-hidden="true"></div>
+    <div class="wrap hero-top">
+      <p class="eyebrow">A free skill you add to Claude, for finance teams at services firms</p>
+      <h1>Trust the numbers Claude gives you.</h1>
+      <p class="sub">With it, Claude checks each number against your books before you see it.</p>
+      <div class="cta">
+        <a class="btn btn--ivory dl" href="https://github.com/tstrider/tick-and-tie/releases/latest/download/services-finance-code.zip">Download the skill</a>
+        <a class="btn btn--ghost" href="https://github.com/tstrider/tick-and-tie">View on GitHub</a>
+      </div>
+    </div>
+    <div class="wrap desk">
+      <div class="sheet sheet--stack sheet--hero" id="hero-sheet">
+        <div class="ask"><b>You</b><p>What was our gross margin by client in Q3?</p></div>
+        <div class="hero-body">
+          <div class="hero-fig">
+            <p class="cap">Blended gross margin</p>
+            <p class="bignum"><b id="h-margin">33</b><i>%</i><svg class="scribble" viewBox="0 0 300 160" preserveAspectRatio="none" aria-hidden="true"><path d="M152 11C64 6 13 39 15 84c2 47 73 67 147 65 76-2 127-31 123-74C281 33 213 9 126 17"/></svg></p>
+            <div class="verdict" id="h-verdict" aria-live="polite"></div>
+          </div>
+          <div class="hero-table" id="h-table"></div>
+        </div>
+        <div class="tiebar" id="h-tie" aria-live="polite">
+          <div class="tb-side"><span class="cap">Revenue in this answer</span><b class="num" id="tb-a"></b></div>
+          <div class="tb-mid" id="tb-mid"></div>
+          <div class="tb-side"><span class="cap">Revenue on your income statement</span><b class="num" id="tb-b"></b></div>
+        </div>
+      </div>
+      <div class="switches" id="h-switches" role="group" aria-label="The three hidden errors"></div>
+      <p class="fine fine--dark">Made-up numbers. The math runs on the skill's own code.</p>
+    </div>
+  </section>
+
+  <!-- 2. the plain-English report -->
+  <section class="sec sec--paper" id="report" data-demo="report">
+    <div class="wrap head">
+      <h2>The answer comes in plain words.</h2>
+      <p class="sub"><span>Five lines first, then the proof.</span> <span>Pick a line to check it.</span></p>
+    </div>
+    <div class="wrap rp" id="rp"></div>
+  </section>
+
+  <!-- 3. exact money math -->
+  <section class="sec sec--dark" id="tape" data-demo="tape">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>Fractions of a cent never pile up.</h2>
+      <p class="sub"><span>The skill adds at full precision and rounds once.</span> <span>Add lines to the tape.</span></p>
+    </div>
+    <div class="wrap tp" id="tp"></div>
+  </section>
+
+  <!-- 4. splits add back -->
+  <section class="sec sec--paper" id="split" data-demo="split">
+    <div class="wrap head">
+      <h2>When it splits an amount, the parts sum to the whole.</h2>
+      <p class="sub"><span>To the last cent.</span> <span>Change the amount, the parts, or the currency.</span></p>
+    </div>
+    <div class="wrap sp" id="sp"></div>
+  </section>
+
+  <!-- 5. no dropped rows -->
+  <section class="sec sec--dark" id="rows" data-demo="rows">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>No line of your data goes missing.</h2>
+      <p class="sub"><span>It counts the rows in and the rows out.</span> <span>When it matches time entries to rates, it keeps and reports the entries with no match.</span></p>
+    </div>
+    <div class="wrap rw" id="rw"></div>
+  </section>
+
+  <!-- 6. rates by service date -->
+  <section class="sec sec--paper" id="rates" data-demo="rates">
+    <div class="wrap head">
+      <h2>It prices each hour at the rate on the day of the work.</h2>
+      <p class="sub"><span>A rate card is dated.</span> <span>Drag the time entry across the rate change.</span></p>
+    </div>
+    <div class="wrap rt" id="rt"></div>
+  </section>
+
+  <!-- 7. cost per billable hour -->
+  <section class="sec sec--dark" id="cph" data-demo="cph">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>Cost per hour uses billable hours.</h2>
+      <p class="sub"><span>1,800 by default, never 2,080.</span> <span>Drag the hours.</span></p>
+    </div>
+    <div class="wrap cp" id="cp"></div>
+  </section>
+
+  <!-- 8. definitions -->
+  <section class="sec sec--paper" id="util" data-demo="util">
+    <div class="wrap head">
+      <h2>Utilization and realization come with their definitions.</h2>
+      <p class="sub"><span>Firms define them differently.</span> <span>Switch the basis.</span></p>
+    </div>
+    <div class="wrap ut" id="ut"></div>
+  </section>
+
+  <!-- 9. fee burn -->
+  <section class="sec sec--dark" id="burn" data-demo="burn">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>The skill watches a fixed fee against the calendar.</h2>
+      <p class="sub"><span>It flags the scope when the fee is used up faster than time passes.</span> <span>Drag the day.</span></p>
+    </div>
+    <div class="wrap bn" id="bn"></div>
+  </section>
+
+  <!-- 10. billing and revenue -->
+  <section class="sec sec--paper" id="wip" data-demo="wip">
+    <div class="wrap head">
+      <h2>WIP, unbilled, and deferred revenue stay apart.</h2>
+      <p class="sub"><span>Billing and revenue are two schedules.</span> <span>Step through the months.</span></p>
+    </div>
+    <div class="wrap wp" id="wp"></div>
+  </section>
+
+  <!-- 11. the cut-off -->
+  <section class="sec sec--dark" id="cut" data-demo="cut">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>It flags time entered after the cut-off.</h2>
+      <p class="sub"><span>Every number built on time entries states its cut-off date.</span> <span>Drag the cut-off.</span></p>
+    </div>
+    <div class="wrap ct" id="ct"></div>
+  </section>
+
+  <!-- 12. gross versus net -->
+  <section class="sec sec--paper" id="gvn" data-demo="gvn">
+    <div class="wrap head">
+      <h2>Accounting calls go to your controller.</h2>
+      <p class="sub"><span>It flags gross or net and never guesses.</span> <span>Here the controller is you.</span></p>
+    </div>
+    <div class="wrap gv" id="gv"></div>
+  </section>
+
+  <!-- 13. never plugs to a target -->
+  <section class="sec sec--dark" id="target" data-demo="target">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>It never changes a model to hit a target.</h2>
+      <p class="sub"><span>It shows what would have to be true instead.</span> <span>Set a target margin.</span></p>
+    </div>
+    <div class="wrap tg" id="tg"></div>
+  </section>
+
+  <!-- 14. approval -->
+  <section class="sec sec--paper" id="approve" data-demo="approve">
+    <div class="wrap head">
+      <h2>Nothing posts, bills, or pays without your yes.</h2>
+      <p class="sub"><span>It shows exactly what will happen, then waits.</span> <span>Hold the button to approve.</span></p>
+    </div>
+    <div class="wrap ap" id="ap"></div>
+  </section>
+
+  <!-- 15. masking -->
+  <section class="sec sec--dark" id="mask" data-demo="mask">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>Bank numbers, tax IDs, and pay stay masked.</h2>
+      <p class="sub"><span>In every output and every log.</span> <span>Hold the button to peek at the made-up originals.</span></p>
+    </div>
+    <div class="wrap mk" id="mk"></div>
+  </section>
+
+  <!-- 16. security check -->
+  <section class="sec sec--paper" id="sec" data-demo="sec">
+    <div class="wrap head">
+      <h2>A security check runs on every task.</h2>
+      <p class="sub"><span>Thirteen sections, however small the task.</span> <span>Pick a task.</span></p>
+    </div>
+    <div class="wrap sc" id="sc"></div>
+  </section>
+
+  <!-- 17. the gates -->
+  <section class="sec sec--dark" id="gates" data-demo="gates">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>The work isn't done until the number ties to your books.</h2>
+      <p class="sub"><span>Answer the skill's question below, then break the tie-out.</span></p>
+    </div>
+    <div class="wrap gt" id="gt"></div>
+  </section>
+
+  <!-- 18. the tiers -->
+  <section class="sec sec--paper" id="tiers" data-demo="tiers">
+    <div class="wrap head">
+      <h2>Small questions stay fast. High-risk work gets every check.</h2>
+      <p class="sub"><span>Claude sizes up the risk of every task first.</span> <span>Move the dial.</span></p>
+    </div>
+    <div class="wrap tr" id="tr"></div>
+  </section>
+
+  <!-- 19. money.py, live -->
+  <section class="sec sec--dark" id="console" data-demo="console">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2>Try the skill's own math right here.</h2>
+      <p class="sub"><span>The code the skill uses is running in your browser.</span> <span>Pick an example or type your own.</span></p>
+    </div>
+    <div class="wrap cn" id="cn"></div>
+  </section>
+
+  <!-- 20. the guides -->
+  <section class="sec sec--paper" id="guides" data-demo="guides">
+    <div class="wrap head">
+      <h2>The skill comes with sixteen finance guides that Claude reads.</h2>
+      <p class="sub"><span>One covers pricing, one covers accounting rules, and Claude opens only the ones a task needs.</span> <span>Open one below, then pick your accounting system and rules.</span></p>
+    </div>
+    <div class="wrap gd" id="gd"></div>
+  </section>
+
+  <!-- install -->
+  <section class="sec sec--dark install" id="install">
+    <div class="lamp" aria-hidden="true"></div>
+    <div class="wrap head">
+      <h2><span>Install it.</span> <span>Ask for a number.</span></h2>
+    </div>
+    <div class="wrap">
+      <div class="sheet sheet--stack steps">
+        <ol>
+          <li><b>1</b><div><h3>Download the skill</h3><p>It is one zip file. Don't unzip it.</p></div></li>
+          <li><b>2</b><div><h3>Upload it to Claude</h3><p>Settings, then Capabilities, then Skills. Keep code execution turned on.</p></div></li>
+          <li><b>3</b><div><h3>Ask for a number</h3><p>The skill loads on its own.</p></div></li>
+        </ol>
+        <a class="btn btn--ink dl" href="https://github.com/tstrider/tick-and-tie/releases/latest/download/services-finance-code.zip">Download the skill</a>
+      </div>
+
+      <div class="term">
+        <div class="term-bar"><span>Try it. Ask Claude this.</span><button type="button" class="term-copy" data-copy="try-text">Copy</button></div>
+        <pre><code id="try-text">What's our cost per billable hour for a $120,000 salary with 25% benefits and taxes?</code></pre>
+      </div>
+      <p class="fine fine--dark">It should say which billable-hours number it used and invite you to change it.</p>
+
+      <div class="term">
+        <div class="term-bar"><span>Claude Code</span><button type="button" class="term-copy" data-copy="install-code">Copy</button></div>
+        <pre><code id="install-code">git clone https://github.com/tstrider/tick-and-tie.git
+cp -R tick-and-tie/skills/services-finance-code ~/.claude/skills/</code></pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <p>Free and open source under the MIT license. It is not accounting advice, and it is told never to call code secure.</p>
+    <nav aria-label="Project links">
+      <a href="https://github.com/tstrider/tick-and-tie">GitHub</a>
+      <a href="https://github.com/tstrider/tick-and-tie#readme">README</a>
+      <a href="https://github.com/tstrider/tick-and-tie/blob/HEAD/skills/services-finance-code/SKILL.md">The skill file</a>
+      <a href="https://github.com/tstrider/tick-and-tie/blob/HEAD/skills/services-finance-code/scripts/money.py">money.py</a>
+      <a href="https://github.com/tstrider/tick-and-tie/blob/HEAD/LICENSE">License</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="assets/hero-data.js?v=4" defer></script>
+<script src="assets/site.js?v=4" defer></script>
+</body>
+</html>
